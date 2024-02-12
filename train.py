@@ -193,7 +193,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
     lr_scheduler = LambdaLR(
         optimizer=optimizer,
         lr_lambda=lambda step: rate(
-            step, model_size=model.src_embed[0].d_model, factor=1.0, warmup=400
+            step, model_size=model.src_embed[0].d_model, factor=1.0, warmup=4000
         ),
     )
     model.train()
