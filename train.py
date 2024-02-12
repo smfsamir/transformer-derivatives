@@ -12,6 +12,9 @@ from collections import OrderedDict
 from torch.nn.functional import log_softmax
 
 from flowmason import conduct, SingletonStep
+from dotenv import dotenv_values
+
+DEVICE = dotenv_values(".env")['DEVICE']
 
 logger = loguru.logger
 class DerivativeDataset(Dataset):
@@ -55,7 +58,7 @@ def collate_batch(batch, tokenizer_dict, device):
 def create_dataloaders(
     device,
     tokenizer_dict,
-    batch_size=64,
+    batch_size=128,
 ) -> DataLoader:
     
     dataset = DerivativeDataset('train.txt')
@@ -169,7 +172,7 @@ def rate(step, model_size, factor, warmup):
 
 def step_test_dataloader(tokenizer_dict, **kwargs):
     dataloader = create_dataloaders(
-        device=torch.device('cpu'),
+        device=torch.device(DEVICE),
         tokenizer_dict=tokenizer_dict
     )
     i2t = {v: k for k, v in tokenizer_dict.items()} 
@@ -227,7 +230,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
             test_seq = "d(8exp^(9e))/de=72exp^(9e)"
             model.eval()
             with torch.no_grad():
-                eval_src = collate_batch([test_seq], tokenizer_dict, torch.device('cpu'))[0].T
+                eval_src = collate_batch([test_seq], tokenizer_dict, torch.device(DEVICE))[0].T
                 eval_tgt = torch.tensor([tokenizer_dict['[BOS]']]).unsqueeze(0).T
                 next_token = None
                 curr_seq = ""
