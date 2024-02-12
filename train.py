@@ -223,7 +223,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
 
         # (S, N, E)  
         src_attn_mask = None
-        logits = model(src, tgt, src_attn_mask.to(DEVICE), 
+        logits = model(src, tgt, src_attn_mask, 
                        tgt_attn_mask.to(DEVICE), src_padding_mask.T.to(DEVICE), tgt_padding_mask.T.to(DEVICE))
         # transpose the logits to be B x S x V
         loss_output = loss(logits.permute(1, 2, 0)[:, :, :-1], tgt.T[:, 1:])
