@@ -152,7 +152,11 @@ def make_model(tokenizer_dict):
     embed_tgt = nn.Sequential(Embeddings(d_model, len(tokenizer_dict), padding_idx=tokenizer_dict['[PAD]']), c(position))
     generator = Generator(d_model, len(tokenizer_dict))
     model = DerivativeTransformer(
-        nn.Transformer(d_model=d_model, nhead=4, num_encoder_layers=6, num_decoder_layers=6, dim_feedforward=2048),
+        nn.Transformer(d_model=d_model, 
+                       nhead=4, 
+                       num_encoder_layers=6, 
+                       num_decoder_layers=6, 
+                       dim_feedforward=2048),
         embed_src,
         embed_tgt,
         generator
@@ -176,6 +180,9 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
         tokenizer_dict=tokenizer_dict
     )
     i2t = {v: k for k, v in tokenizer_dict.items()} 
+    num_encoder_layers = 12
+    num_decoder_layers = 12
+    num_attn_heads = 8
     model = make_model(tokenizer_dict)
     loss = nn.CrossEntropyLoss(ignore_index=tokenizer_dict['[PAD]'])
     optimizer = torch.optim.Adam(
@@ -190,6 +197,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
     model.train()
     eval_steps = 50
     curr_step = 0
+    best_loss = float('inf')
 
 
     for src, tgt in dataloader: # B x S
@@ -246,6 +254,11 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
                     # add the next token to the eval_tgt
                     eval_tgt = torch.cat([eval_tgt, torch.tensor([[tokenizer_dict[next_token]]]).T], dim=0)
                 logger.info(f'Predicted sequence: {curr_seq}')
+            # save the current model
+            if loss_output < best_loss:
+                best_loss = loss_output
+                torch.save(model.state_dict(), f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}.pt")
+            
         curr_step += 1
 
 if __name__ == '__main__':
@@ -255,6 +268,6 @@ if __name__ == '__main__':
     })
     step_dict['test_dataloader'] = SingletonStep(step_test_dataloader, {
         'tokenizer_dict': 'create_tokenizer',
-        'version': '001'
+        'version': '001' 
     })
     conduct('cache_dir', step_dict, 'scale_logs')
