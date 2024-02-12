@@ -182,8 +182,8 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
         batch_size=batch_size
     )
     i2t = {v: k for k, v in tokenizer_dict.items()} 
-    num_encoder_layers = 12
-    num_decoder_layers = 12
+    num_encoder_layers = 6
+    num_decoder_layers = 6
     num_attn_heads = 8
     model = make_model(tokenizer_dict, DEVICE)
     loss = nn.CrossEntropyLoss(ignore_index=tokenizer_dict['[PAD]'])
