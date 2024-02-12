@@ -261,7 +261,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
             if loss_output < best_loss:
                 best_loss = loss_output
                 torch.save(model.state_dict(), f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}_bs={batch_size}.pt")
-        model.train()
+            model.train()
             
         curr_step += 1
 
