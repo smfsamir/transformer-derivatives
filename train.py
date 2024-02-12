@@ -53,7 +53,7 @@ def collate_batch(batch, tokenizer_dict, device):
 
     src = [src + [tokenizer_dict['[PAD]']] * (max_src_len - len(src)) for src in src]
     tgt = [tgt + [tokenizer_dict['[PAD]']] * (max_tgt_len - len(tgt)) for tgt in tgt]
-    return torch.tensor(src), torch.tensor(tgt)
+    return torch.tensor(src).to(device), torch.tensor(tgt).to(device)
 
 def create_dataloaders(
     device,
@@ -144,7 +144,7 @@ class Generator(nn.Module):
     def forward(self, x):
         return self.proj(x)
 
-def make_model(tokenizer_dict):
+def make_model(tokenizer_dict, device):
     c = copy.deepcopy
     d_model = 512
     position = PositionalEncoding(d_model)
@@ -161,7 +161,7 @@ def make_model(tokenizer_dict):
         embed_tgt,
         generator
     )
-    return model
+    return model.to(device)
 
 def rate(step, model_size, factor, warmup):
     """
