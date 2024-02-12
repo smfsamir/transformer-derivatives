@@ -185,7 +185,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
     num_encoder_layers = 12
     num_decoder_layers = 12
     num_attn_heads = 8
-    model = make_model(tokenizer_dict)
+    model = make_model(tokenizer_dict, DEVICE)
     loss = nn.CrossEntropyLoss(ignore_index=tokenizer_dict['[PAD]'])
     optimizer = torch.optim.Adam(
         model.parameters(), lr=0.5, betas=(0.9, 0.98), eps=1e-9
