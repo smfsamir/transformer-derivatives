@@ -239,7 +239,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
 
         if curr_step > 0 and curr_step % eval_steps == 0:
             test_seq = "d(8exp^(9e))/de=72exp^(9e)"
-            model.eval()
+            model.eval() # TODO: ensure that we go back to training mode
             with torch.no_grad():
                 eval_src = collate_batch([test_seq], tokenizer_dict, torch.device(DEVICE))[0].T
                 eval_tgt = torch.tensor([tokenizer_dict['[BOS]']]).unsqueeze(0).T.to(DEVICE)
@@ -261,6 +261,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
             if loss_output < best_loss:
                 best_loss = loss_output
                 torch.save(model.state_dict(), f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}_bs={batch_size}.pt")
+        model.train()
             
         curr_step += 1
 
