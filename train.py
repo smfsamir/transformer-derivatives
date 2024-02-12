@@ -255,7 +255,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
                     next_token = i2t[next_token.item()]
                     curr_seq += next_token
                     # add the next token to the eval_tgt
-                    eval_tgt = torch.cat([eval_tgt, torch.tensor([[tokenizer_dict[next_token]]]).T], dim=0)
+                    eval_tgt = torch.cat([eval_tgt, torch.tensor([[tokenizer_dict[next_token]]]).T.to(DEVICE)], dim=0)
                 logger.info(f'Predicted sequence: {curr_seq}')
             # save the current model
             if loss_output < best_loss:
