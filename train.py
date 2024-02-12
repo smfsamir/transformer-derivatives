@@ -242,7 +242,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
             model.eval()
             with torch.no_grad():
                 eval_src = collate_batch([test_seq], tokenizer_dict, torch.device(DEVICE))[0].T
-                eval_tgt = torch.tensor([tokenizer_dict['[BOS]']]).unsqueeze(0).T
+                eval_tgt = torch.tensor([tokenizer_dict['[BOS]']]).unsqueeze(0).T.to(DEVICE)
                 next_token = None
                 curr_seq = ""
                 while next_token != '[EOS]' and len(curr_seq) < 30:
