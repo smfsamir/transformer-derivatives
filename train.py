@@ -58,7 +58,7 @@ def collate_batch(batch, tokenizer_dict, device):
 def create_dataloaders(
     device,
     tokenizer_dict,
-    batch_size=128,
+    batch_size=256,
 ) -> DataLoader:
     
     dataset = DerivativeDataset('train.txt')
@@ -175,9 +175,11 @@ def rate(step, model_size, factor, warmup):
     )
 
 def step_test_dataloader(tokenizer_dict, **kwargs):
+    batch_size = 256
     dataloader = create_dataloaders(
         device=torch.device(DEVICE),
-        tokenizer_dict=tokenizer_dict
+        tokenizer_dict=tokenizer_dict,
+        batch_size=batch_size
     )
     i2t = {v: k for k, v in tokenizer_dict.items()} 
     num_encoder_layers = 12
@@ -257,7 +259,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
             # save the current model
             if loss_output < best_loss:
                 best_loss = loss_output
-                torch.save(model.state_dict(), f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}.pt")
+                torch.save(model.state_dict(), f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}_bs={batch_size}.pt")
             
         curr_step += 1
 
