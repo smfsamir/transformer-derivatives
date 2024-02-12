@@ -197,7 +197,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
         ),
     )
     model.train()
-    eval_steps = 50
+    eval_steps = 500
     curr_step = 0
     best_loss = float('inf')
 
