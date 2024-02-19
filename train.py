@@ -280,18 +280,21 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
 
     num_correct = 0
     num_total = 0
+    max_seq_len = 30
     with torch.no_grad():
         i2t = {v: k for k, v in tokenizer_dict.items()} 
         for src, tgt in dataloader:
             src = src.T
             tgt = tgt.T
             decoder_prefix = tgt[0].unsqueeze(0)
-            # no need for a tgt attn mask because this is the eval mode
-            src_padding_mask = (src == tokenizer_dict['[PAD]'])
-            logits = model(src, decoder_prefix, None, None, src_padding_mask.T, None)
-            next_token_logits = logits.permute(1, 0, 2)[:, -1, :]
-
-            ipdb.set_trace()
+            # set while condition to while we decoder prefix is less than max_seq_len + 2
+            while decoder_prefix.shape[1] < max_seq_len + 2:
+                src_padding_mask = (src == tokenizer_dict['[PAD]'])
+                logits = model(src, decoder_prefix, None, None, src_padding_mask.T, None)
+                next_token_logits = logits.permute(1, 0, 2)[:, -1, :]
+                next_tokens = torch.argmax(next_token_logits, dim=1)
+                decoder_prefix = torch.cat([decoder_prefix, next_tokens.unsqueeze(0)], dim=0)
+                ipdb.set_trace()
     return num_correct / num_total
 
 if __name__ == '__main__':
