@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from torchinfo import summary
 import copy
 import math
@@ -284,7 +285,7 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
     max_seq_len = 30
     with torch.no_grad():
         i2t = {v: k for k, v in tokenizer_dict.items()} 
-        for src, tgt in dataloader:
+        for src, tgt in tqdm(dataloader):
             src = src.T
             tgt = tgt.T
             decoder_prefix = tgt[0].unsqueeze(0)
