@@ -299,17 +299,27 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
             assert (predictions == tokenizer_dict['[EOS]']).sum(axis=1).sum() >= 8
             # take the prediction up to the first [EOS] token for each datapoint
             predictions_decoded = []
+            actual_decoded = []
             for i in range(8):
                 pred = predictions[i]
+                actual = tgt[i]
                 for j in range(len(pred)):
                     if pred[j] == tokenizer_dict['[EOS]']:
                         pred = pred[:j]
                         break
+                for j in range(len(actual)):
+                    if actual[j] == tokenizer_dict['[EOS]']:
+                        actual = actual[:j]
+                        break
                 pred = [i2t[token.item()] for token in pred]
+                actual = [i2t[token.item()] for token in actual]
                 # remove [BOS] and [EOS] tokens
                 pred = pred[1:]
+                actual = actual[1:]
                 predictions_decoded.append(''.join(pred))
+                actual_decoded.append(''.join(actual))
             print(predictions_decoded)
+            print(actual_decoded)
             ipdb.set_trace()
     return num_correct / num_total
 
