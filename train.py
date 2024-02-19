@@ -307,6 +307,7 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
                         break
                 pred = [i2t[token.item()] for token in pred]
                 # remove [BOS] and [EOS] tokens
+                pred = pred[1:]
                 predictions_decoded.append(''.join(pred))
             print(predictions_decoded)
             ipdb.set_trace()
