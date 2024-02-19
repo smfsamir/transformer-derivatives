@@ -205,70 +205,75 @@ def step_train_model(tokenizer_dict, **kwargs):
     curr_step = 0
     best_loss = float('inf')
 
+    num_epochs = 10
+    for epoch in range(num_epochs):
+        for src, tgt in dataloader: # B x S
+            src = src.T # batch first = False
+            tgt = tgt.T # batch first = False
 
-    for src, tgt in dataloader: # B x S
-        src = src.T # batch first = False
-        tgt = tgt.T # batch first = False
+            # NOTE: need to replace with -100 maybe?
+            src_padding_mask = (src == tokenizer_dict['[PAD]'])
+            tgt_padding_mask = (tgt == tokenizer_dict['[PAD]'])
+            src_attn_mask = src == tokenizer_dict['[PAD]']
+            num_heads = model.transformer.nhead
 
-        # NOTE: need to replace with -100 maybe?
-        src_padding_mask = (src == tokenizer_dict['[PAD]'])
-        tgt_padding_mask = (tgt == tokenizer_dict['[PAD]'])
-        src_attn_mask = src == tokenizer_dict['[PAD]']
-        num_heads = model.transformer.nhead
-
-        # (N * num_heads, S, S) for the attn mask
-        # thus, we need to repeat the mask for the number of heads using tile
+            # (N * num_heads, S, S) for the attn mask
+            # thus, we need to repeat the mask for the number of heads using tile
 
 
-        # TODO; do we need a src attn mask? maybe not
-        tgt_attn_mask = model.transformer.generate_square_subsequent_mask(tgt.size(0)).unsqueeze(0).repeat(src.shape[1] * num_heads, 1, 1)
-        # turn -inf to False and 0 to True
-        tgt_attn_mask = tgt_attn_mask != 0
+            # TODO; do we need a src attn mask? maybe not
+            tgt_attn_mask = model.transformer.generate_square_subsequent_mask(tgt.size(0)).unsqueeze(0).repeat(src.shape[1] * num_heads, 1, 1)
+            # turn -inf to False and 0 to True
+            tgt_attn_mask = tgt_attn_mask != 0
 
-        # (S, N, E)  
-        src_attn_mask = None
-        logits = model(src, tgt, src_attn_mask, 
-                       tgt_attn_mask.to(DEVICE), src_padding_mask.T.to(DEVICE), tgt_padding_mask.T.to(DEVICE))
-        # transpose the logits to be B x S x V
-        loss_output = loss(logits.permute(1, 2, 0)[:, :, :-1], tgt.T[:, 1:])
-        # loss_output = loss(logits.permute(1, 0, 2)[:, :-1, :], tgt.T[:, 1:])
-        logger.info(f'Loss: {loss_output.item()} (curr_step: {curr_step})')
+            # (S, N, E)  
+            src_attn_mask = None
+            logits = model(src, tgt, src_attn_mask, 
+                        tgt_attn_mask.to(DEVICE), src_padding_mask.T.to(DEVICE), tgt_padding_mask.T.to(DEVICE))
+            # transpose the logits to be B x S x V
+            loss_output = loss(logits.permute(1, 2, 0)[:, :, :-1], tgt.T[:, 1:])
+            # loss_output = loss(logits.permute(1, 0, 2)[:, :-1, :], tgt.T[:, 1:])
+            # log the loss after every 1000 steps
+            if curr_step % 1000 == 0:
+                logger.info(f'Loss: {loss_output.item()} (curr_step: {curr_step})')
+            # logger.info(f'Loss: {loss_output.item()} (curr_step: {curr_step})')
 
-        # update the model
-        loss_output.backward()
-        optimizer.step()
-        lr_scheduler.step()
-        # zero the gradients
-        optimizer.zero_grad()
+            # update the model
+            loss_output.backward()
+            optimizer.step()
+            lr_scheduler.step()
+            # zero the gradients
+            optimizer.zero_grad()
 
-        if curr_step > 0 and curr_step % eval_steps == 0:
-            test_seq = "d(8exp^(9e))/de=72exp^(9e)"
-            model.eval()
-            with torch.no_grad():
-                eval_src = collate_batch([test_seq], tokenizer_dict, torch.device(DEVICE))[0].T
-                eval_tgt = torch.tensor([tokenizer_dict['[BOS]']]).unsqueeze(0).T.to(DEVICE)
-                next_token = None
-                curr_seq = ""
-                while next_token != '[EOS]' and len(curr_seq) < 30:
-                    assert tokenizer_dict['[PAD]'] not in eval_src
-                    logits = model(eval_src, eval_tgt, None, None, None, None)
-                    # get the next token
-                    next_token_logits = logits[-1, 0, :]
-                    next_token = torch.argmax(next_token_logits)
-                    # log the next token by getting it from the tokenizer using i2t
-                    next_token = i2t[next_token.item()]
-                    curr_seq += next_token
-                    # add the next token to the eval_tgt
-                    eval_tgt = torch.cat([eval_tgt, torch.tensor([[tokenizer_dict[next_token]]]).T.to(DEVICE)], dim=0)
-                logger.info(f'Predicted sequence: {curr_seq}')
-            # save the current model
-            if loss_output < best_loss:
-                best_loss = loss_output
-                saved_model_name = f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}_bs={batch_size}.pt"
-                torch.save(model.state_dict(), saved_model_name)
-            model.train()
-            
-        curr_step += 1
+            if curr_step > 0 and curr_step % eval_steps == 0:
+                test_seq = "d(8exp^(9e))/de=72exp^(9e)"
+                model.eval()
+                with torch.no_grad():
+                    eval_src = collate_batch([test_seq], tokenizer_dict, torch.device(DEVICE))[0].T
+                    eval_tgt = torch.tensor([tokenizer_dict['[BOS]']]).unsqueeze(0).T.to(DEVICE)
+                    next_token = None
+                    curr_seq = ""
+                    while next_token != '[EOS]' and len(curr_seq) < 30:
+                        assert tokenizer_dict['[PAD]'] not in eval_src
+                        logits = model(eval_src, eval_tgt, None, None, None, None)
+                        # get the next token
+                        next_token_logits = logits[-1, 0, :]
+                        next_token = torch.argmax(next_token_logits)
+                        # log the next token by getting it from the tokenizer using i2t
+                        next_token = i2t[next_token.item()]
+                        curr_seq += next_token
+                        # add the next token to the eval_tgt
+                        eval_tgt = torch.cat([eval_tgt, torch.tensor([[tokenizer_dict[next_token]]]).T.to(DEVICE)], dim=0)
+                    logger.info(f'Predicted sequence: {curr_seq}')
+                # save the current model
+                if loss_output < best_loss:
+                    best_loss = loss_output
+                    saved_model_name = f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}_bs={batch_size}.pt"
+                    torch.save(model.state_dict(), saved_model_name)
+                model.train()
+                
+            curr_step += 1
+
     return saved_model_name
 
 def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str, 
