@@ -158,7 +158,7 @@ def make_model(tokenizer_dict, device):
                        nhead=2, 
                        num_encoder_layers=3, 
                        num_decoder_layers=3, 
-                       dim_feedforward=2048),
+                       dim_feedforward=1024),
         embed_src,
         embed_tgt,
         generator
