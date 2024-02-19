@@ -146,7 +146,7 @@ class Generator(nn.Module):
     def forward(self, x):
         return self.proj(x)
 
-def make_model(num_encoder_layers, num_decoder_layers, tokenizer_dict, device):
+def make_model(num_attn_heads, num_encoder_layers, num_decoder_layers, tokenizer_dict, device):
     c = copy.deepcopy
     d_model = 128
     position = PositionalEncoding(d_model)
@@ -155,7 +155,7 @@ def make_model(num_encoder_layers, num_decoder_layers, tokenizer_dict, device):
     generator = Generator(d_model, len(tokenizer_dict))
     model = DerivativeTransformer(
         nn.Transformer(d_model=d_model, 
-                       nhead=2, 
+                       nhead=num_attn_heads, 
                        num_encoder_layers=num_encoder_layers, 
                        num_decoder_layers=num_decoder_layers, 
                        dim_feedforward=4*d_model),
@@ -183,10 +183,11 @@ def step_train_model(tokenizer_dict, **kwargs):
         tokenizer_dict=tokenizer_dict,
         batch_size=batch_size
     )
+    num_attn_heads = 4
     i2t = {v: k for k, v in tokenizer_dict.items()} 
     num_encoder_layers = 3
     num_decoder_layers = 3
-    model = make_model(num_encoder_layers, num_decoder_layers, tokenizer_dict, DEVICE)
+    model = make_model(num_attn_heads, num_encoder_layers, num_decoder_layers, tokenizer_dict, DEVICE)
     summary(model)
     ipdb.set_trace()
     loss = nn.CrossEntropyLoss(ignore_index=tokenizer_dict['[PAD]'])
