@@ -302,10 +302,10 @@ if __name__ == '__main__':
         'version': '001'
     })
     step_dict['eval_model_map'] = MapReduceStep(step_train_model, {
+        'model_name': ['bm_known.pt']
+    },{
         'tokenizer_dict': 'create_tokenizer', 
         'version': '001', 
         'eval_fname': 'train.txt'
-    }, {
-        'model_name': ['bm_known.pt']
-    }, list)
+    },  list)
     conduct('cache_dir', step_dict, 'scale_logs')
