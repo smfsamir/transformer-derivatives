@@ -348,7 +348,7 @@ if __name__ == '__main__':
         'version': '001'
     })
     step_dict['eval_model_map'] = MapReduceStep(eval_dict, {
-        'model_name': filter(lambda x: x.endswith('.pt'), os.listdir())
+        'model_name': list(filter(lambda x: x.endswith('.pt'), os.listdir()))
     },{
         'tokenizer_dict': 'create_tokenizer', 
         'model_name': 'train_model',
