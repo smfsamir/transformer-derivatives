@@ -11,7 +11,7 @@ from torch.utils.data import BatchSampler, RandomSampler, Dataset, DataLoader
 from collections import OrderedDict
 from torch.nn.functional import log_softmax
 
-from flowmason import conduct, SingletonStep
+from flowmason import conduct, SingletonStep, MapReduceStep
 from dotenv import dotenv_values
 
 DEVICE = dotenv_values(".env")['DEVICE']
@@ -174,7 +174,7 @@ def rate(step, model_size, factor, warmup):
         model_size ** (-0.5) * min(step ** (-0.5), step * warmup ** (-1.5))
     )
 
-def step_test_dataloader(tokenizer_dict, **kwargs):
+def step_train_model(tokenizer_dict, **kwargs):
     batch_size = 256
     dataloader = create_dataloaders(
         device=torch.device(DEVICE),
@@ -239,7 +239,7 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
 
         if curr_step > 0 and curr_step % eval_steps == 0:
             test_seq = "d(8exp^(9e))/de=72exp^(9e)"
-            model.eval() # TODO: ensure that we go back to training mode
+            model.eval()
             with torch.no_grad():
                 eval_src = collate_batch([test_seq], tokenizer_dict, torch.device(DEVICE))[0].T
                 eval_tgt = torch.tensor([tokenizer_dict['[BOS]']]).unsqueeze(0).T.to(DEVICE)
@@ -260,18 +260,44 @@ def step_test_dataloader(tokenizer_dict, **kwargs):
             # save the current model
             if loss_output < best_loss:
                 best_loss = loss_output
-                torch.save(model.state_dict(), f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}_bs={batch_size}.pt")
+                saved_model_name = f"best_model_{curr_step}_enc={num_encoder_layers}_dec={num_decoder_layers}_nheads={num_attn_heads}_bs={batch_size}.pt"
+                torch.save(model.state_dict(), saved_model_name)
             model.train()
             
         curr_step += 1
+
+def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str, 
+                    **kwargs): 
+    # load the model
+    model = make_model(tokenizer_dict, DEVICE)
+    model.load_state_dict(torch.load(model_name))
+    dataloader = create_dataloaders(
+        device=torch.device(DEVICE),
+        tokenizer_dict=tokenizer_dict,
+        batch_size=8
+    )
+    model.eval()
+    with torch.no_grad():
+        i2t = {v: k for k, v in tokenizer_dict.items()} 
+        for src, tgt in dataloader:
+            src = src.T
+            tgt = tgt.T
+            ipdb.set_trace()
+
 
 if __name__ == '__main__':
     step_dict = OrderedDict()
     step_dict['create_tokenizer'] = SingletonStep(step_create_token_dict, {
         'version': '001'
     })
-    step_dict['test_dataloader'] = SingletonStep(step_test_dataloader, {
-        'tokenizer_dict': 'create_tokenizer',
-        'version': '001' 
+    # step_dict['train_model'] = SingletonStep(step_train_model, {
+    #     'tokenizer_dict': 'create_tokenizer',
+    #     'version': '001' 
+    # })
+    eval_dict = OrderedDict()
+    eval_dict['eval_model'] = SingletonStep(step_eval_model, 
+    )
+    step_dict['eval_model_map'] = MapReduceStep(step_train_model, {
+        'model_name': 'bm_known.pt'
     })
     conduct('cache_dir', step_dict, 'scale_logs')
