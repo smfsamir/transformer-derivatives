@@ -273,16 +273,18 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
     # load the model
     model = make_model(tokenizer_dict, DEVICE)
     model.load_state_dict(torch.load(model_name))
+    batch_size = 256
     dataloader = create_dataloaders(
         device=torch.device(DEVICE),
         tokenizer_dict=tokenizer_dict,
-        batch_size=8
+        batch_size=batch_size
     )
     model.eval()
 
     num_correct = 0
     num_total = 0
     max_seq_len = 30
+    summary(model) # print the model summary
     with torch.no_grad():
         i2t = {v: k for k, v in tokenizer_dict.items()} 
         for src, tgt in tqdm(dataloader):
@@ -298,7 +300,7 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
                 decoder_prefix = torch.cat([decoder_prefix, next_tokens.unsqueeze(0)], dim=0)
             predictions = decoder_prefix.T
             # assert that tokenizer_dict['[EOS]'] is in all of the predictions
-            assert (predictions == tokenizer_dict['[EOS]']).sum(axis=1).sum() >= 8
+            assert (predictions == tokenizer_dict['[EOS]']).sum(axis=1).sum() >= batch_size
             # take the prediction up to the first [EOS] token for each datapoint
             predictions_decoded = []
             actual_decoded = []
