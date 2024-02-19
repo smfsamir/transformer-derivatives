@@ -274,7 +274,8 @@ def step_train_model(tokenizer_dict, **kwargs):
 def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str, 
                     **kwargs): 
     # load the model
-    model = make_model(tokenizer_dict, DEVICE)
+    # model = make_model(tokenizer_dict, DEVICE)
+    model = make_model(4, 3, 3, tokenizer_dict, DEVICE)
     summary(model)
     ipdb.set_trace()
     model.load_state_dict(torch.load(model_name))
