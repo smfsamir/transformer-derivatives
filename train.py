@@ -294,7 +294,8 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
                 next_token_logits = logits.permute(1, 0, 2)[:, -1, :]
                 next_tokens = torch.argmax(next_token_logits, dim=1)
                 decoder_prefix = torch.cat([decoder_prefix, next_tokens.unsqueeze(0)], dim=0)
-                ipdb.set_trace()
+            predictions = decoder_prefix.T
+            ipdb.set_trace()
     return num_correct / num_total
 
 if __name__ == '__main__':
