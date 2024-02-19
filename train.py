@@ -285,6 +285,12 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
         for src, tgt in dataloader:
             src = src.T
             tgt = tgt.T
+            src_attn_mask = src == tokenizer_dict['[PAD]']
+            # no need for a tgt attn mask because this is the eval mode
+            src_padding_mask = (src == tokenizer_dict['[PAD]'])
+            logits = model(src, tgt, src_attn_mask, None, src_padding_mask.T, None)
+            next_token_logits = logits.permute(1, 2, 0)[:, :, :-1]
+
             ipdb.set_trace()
     return num_correct / num_total
 
