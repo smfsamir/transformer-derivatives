@@ -302,7 +302,7 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
             actual_decoded = []
             for i in range(8):
                 pred = predictions[i]
-                actual = tgt[i]
+                actual = tgt.T[i]
                 for j in range(len(pred)):
                     if pred[j] == tokenizer_dict['[EOS]']:
                         pred = pred[:j]
