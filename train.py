@@ -155,9 +155,9 @@ def make_model(tokenizer_dict, device):
     generator = Generator(d_model, len(tokenizer_dict))
     model = DerivativeTransformer(
         nn.Transformer(d_model=d_model, 
-                       nhead=4, 
-                       num_encoder_layers=6, 
-                       num_decoder_layers=6, 
+                       nhead=2, 
+                       num_encoder_layers=3, 
+                       num_decoder_layers=3, 
                        dim_feedforward=2048),
         embed_src,
         embed_tgt,
@@ -184,9 +184,6 @@ def step_train_model(tokenizer_dict, **kwargs):
         batch_size=batch_size
     )
     i2t = {v: k for k, v in tokenizer_dict.items()} 
-    num_encoder_layers = 3
-    num_decoder_layers = 3
-    num_attn_heads = 4
     model = make_model(tokenizer_dict, DEVICE)
     summary(model)
     ipdb.set_trace()
