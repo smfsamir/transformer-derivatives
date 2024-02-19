@@ -184,9 +184,9 @@ def step_train_model(tokenizer_dict, **kwargs):
         batch_size=batch_size
     )
     i2t = {v: k for k, v in tokenizer_dict.items()} 
-    num_encoder_layers = 6
-    num_decoder_layers = 6
-    num_attn_heads = 8
+    num_encoder_layers = 3
+    num_decoder_layers = 3
+    num_attn_heads = 4
     model = make_model(tokenizer_dict, DEVICE)
     loss = nn.CrossEntropyLoss(ignore_index=tokenizer_dict['[PAD]'])
     optimizer = torch.optim.Adam(
@@ -267,11 +267,14 @@ def step_train_model(tokenizer_dict, **kwargs):
             model.train()
             
         curr_step += 1
+    return saved_model_name
 
 def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str, 
                     **kwargs): 
     # load the model
     model = make_model(tokenizer_dict, DEVICE)
+    summary(model)
+    ipdb.set_trace()
     model.load_state_dict(torch.load(model_name))
     batch_size = 256
     dataloader = create_dataloaders(
@@ -336,18 +339,18 @@ if __name__ == '__main__':
     step_dict['create_tokenizer'] = SingletonStep(step_create_token_dict, {
         'version': '001'
     })
-    # step_dict['train_model'] = SingletonStep(step_train_model, {
-    #     'tokenizer_dict': 'create_tokenizer',
-    #     'version': '001' 
-    # })
+    step_dict['train_model'] = SingletonStep(step_train_model, {
+        'tokenizer_dict': 'create_tokenizer',
+        'version': '001' 
+    })
     eval_dict = OrderedDict()
     eval_dict['eval_model'] = SingletonStep(step_eval_model, {
         'version': '001'
     })
     step_dict['eval_model_map'] = MapReduceStep(eval_dict, {
-        'model_name': ['bm_known.pt']
     },{
         'tokenizer_dict': 'create_tokenizer', 
+        'model_name': 'train_model',
         'version': '001', 
         'eval_fname': 'train.txt'
     },  list)
