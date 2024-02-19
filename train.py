@@ -301,7 +301,7 @@ if __name__ == '__main__':
     eval_dict['eval_model'] = SingletonStep(step_eval_model, {
         'version': '001'
     })
-    step_dict['eval_model_map'] = MapReduceStep(step_train_model, {
+    step_dict['eval_model_map'] = MapReduceStep(eval_dict, {
         'model_name': ['bm_known.pt']
     },{
         'tokenizer_dict': 'create_tokenizer', 
