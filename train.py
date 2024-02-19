@@ -349,7 +349,7 @@ if __name__ == '__main__':
     })
     step_dict['train_model'] = SingletonStep(step_train_model, {
         'tokenizer_dict': 'create_tokenizer',
-        'version': '001' 
+        'version': '002' 
     })
     eval_dict = OrderedDict()
     eval_dict['eval_model'] = SingletonStep(step_eval_model, {
