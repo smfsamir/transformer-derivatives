@@ -277,13 +277,16 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
         batch_size=8
     )
     model.eval()
+
+    num_correct = 0
+    num_total = 0
     with torch.no_grad():
         i2t = {v: k for k, v in tokenizer_dict.items()} 
         for src, tgt in dataloader:
             src = src.T
             tgt = tgt.T
             ipdb.set_trace()
-
+    return num_correct / num_total
 
 if __name__ == '__main__':
     step_dict = OrderedDict()
@@ -304,5 +307,5 @@ if __name__ == '__main__':
         'eval_fname': 'train.txt'
     }, {
         'model_name': ['bm_known.pt']
-    })
+    }, list)
     conduct('cache_dir', step_dict, 'scale_logs')
