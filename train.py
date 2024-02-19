@@ -1,3 +1,4 @@
+from torchinfo import summary
 import copy
 import math
 from torch.optim.lr_scheduler import LambdaLR
@@ -318,10 +319,10 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
                 actual = actual[1:]
                 predictions_decoded.append(''.join(pred))
                 actual_decoded.append(''.join(actual))
-            print(predictions_decoded)
-            print(actual_decoded)
-            ipdb.set_trace()
-    return num_correct / num_total
+                num_correct += int(''.join(pred) == ''.join(actual))
+                num_total += 1
+    logger.info(f'Accuracy: {num_correct / num_total}') 
+    # return num_correct / num_total
 
 if __name__ == '__main__':
     step_dict = OrderedDict()
