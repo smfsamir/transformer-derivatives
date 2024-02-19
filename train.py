@@ -288,7 +288,7 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
             tgt = tgt.T
             decoder_prefix = tgt[0].unsqueeze(0)
             # set while condition to while we decoder prefix is less than max_seq_len + 2
-            while decoder_prefix.shape[1] < max_seq_len + 2:
+            while decoder_prefix.shape[0] < max_seq_len + 2:
                 src_padding_mask = (src == tokenizer_dict['[PAD]'])
                 logits = model(src, decoder_prefix, None, None, src_padding_mask.T, None)
                 next_token_logits = logits.permute(1, 0, 2)[:, -1, :]
