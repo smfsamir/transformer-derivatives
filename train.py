@@ -295,6 +295,20 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
                 next_tokens = torch.argmax(next_token_logits, dim=1)
                 decoder_prefix = torch.cat([decoder_prefix, next_tokens.unsqueeze(0)], dim=0)
             predictions = decoder_prefix.T
+            # assert that tokenizer_dict['[EOS]'] is in all of the predictions
+            assert (predictions == tokenizer_dict['[EOS]']).sum(axis=1).sum() >= 8
+            # take the prediction up to the first [EOS] token for each datapoint
+            predictions_decoded = []
+            for i in range(8):
+                pred = predictions[i]
+                for j in range(len(pred)):
+                    if pred[j] == tokenizer_dict['[EOS]']:
+                        pred = pred[:j]
+                        break
+                pred = [i2t[token.item()] for token in pred]
+                # remove [BOS] and [EOS] tokens
+                predictions_decoded.append(''.join(pred))
+            print(predictions_decoded)
             ipdb.set_trace()
     return num_correct / num_total
 
