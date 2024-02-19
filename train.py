@@ -285,6 +285,7 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
     num_total = 0
     max_seq_len = 30
     summary(model) # print the model summary
+    curr_batch = 0
     with torch.no_grad():
         i2t = {v: k for k, v in tokenizer_dict.items()} 
         for src, tgt in tqdm(dataloader):
@@ -324,6 +325,9 @@ def step_eval_model(tokenizer_dict, eval_fname: str, model_name: str,
                 actual_decoded.append(''.join(actual))
                 num_correct += int(''.join(pred) == ''.join(actual))
                 num_total += 1
+            curr_batch += 1
+            if curr_batch % 10 == 0:
+                logger.info(f'Accuracy: {num_correct / num_total}')
     logger.info(f'Accuracy: {num_correct / num_total}') 
     # return num_correct / num_total
 
