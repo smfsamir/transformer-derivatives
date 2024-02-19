@@ -298,6 +298,10 @@ if __name__ == '__main__':
     eval_dict['eval_model'] = SingletonStep(step_eval_model, 
     )
     step_dict['eval_model_map'] = MapReduceStep(step_train_model, {
-        'model_name': 'bm_known.pt'
+        'tokenizer_dict': 'create_tokenizer', 
+        'version': '001', 
+        'eval_fname': 'train.txt'
+    }, {
+        'model_name': ['bm_known.pt']
     })
     conduct('cache_dir', step_dict, 'scale_logs')
