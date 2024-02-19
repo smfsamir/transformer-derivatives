@@ -295,8 +295,9 @@ if __name__ == '__main__':
     #     'version': '001' 
     # })
     eval_dict = OrderedDict()
-    eval_dict['eval_model'] = SingletonStep(step_eval_model, 
-    )
+    eval_dict['eval_model'] = SingletonStep(step_eval_model, {
+        'version': '001'
+    })
     step_dict['eval_model_map'] = MapReduceStep(step_train_model, {
         'tokenizer_dict': 'create_tokenizer', 
         'version': '001', 
