@@ -148,7 +148,7 @@ class Generator(nn.Module):
 
 def make_model(tokenizer_dict, device):
     c = copy.deepcopy
-    d_model = 64
+    d_model = 128
     position = PositionalEncoding(d_model)
     embed_src = nn.Sequential(Embeddings(d_model, len(tokenizer_dict), padding_idx=tokenizer_dict['[PAD]']), c(position))
     embed_tgt = nn.Sequential(Embeddings(d_model, len(tokenizer_dict), padding_idx=tokenizer_dict['[PAD]']), c(position))
