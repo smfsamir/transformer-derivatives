@@ -337,7 +337,7 @@ if __name__ == '__main__':
         'version': '001'
     })
     step_dict['eval_model_map'] = MapReduceStep(eval_dict, {
-        'model_name': ['best_model_2000_enc=6_dec=6_nheads=8_bs=256.pt']
+        'model_name': ['bm_known.pt']
     },{
         'tokenizer_dict': 'create_tokenizer', 
         'version': '001', 
